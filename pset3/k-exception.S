@@ -71,8 +71,8 @@ exception_handler %exception_number
 //    Most exception handlers jump here.
 .globl exception_entry
 exception_entry:
-        pushq %gs
-        pushq %fs
+        push %gs
+        push %fs
         pushq %r15
         pushq %r14
         pushq %r13
@@ -126,8 +126,8 @@ _Z16exception_returnP4proc:
         popq %r13
         popq %r14
         popq %r15
-        popq %fs
-        popq %gs
+        pop %fs
+        pop %gs
         addq $16, %rsp
 
         // return to process
@@ -152,8 +152,8 @@ syscall_entry:
         // other registers:
         subq $8, %rsp                  // error code unused
         pushq $-1                      // reg_intno
-        pushq %gs
-        pushq %fs
+        push %gs
+        push %fs
         pushq %r15 // callee saved
         pushq %r14 // callee saved
         pushq %r13 // callee saved

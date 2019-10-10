@@ -264,9 +264,6 @@ void init_cpu_state() {
 void init_timer(int rate) {
     auto& lapic = lapicstate::get();
     if (rate > 0) {
-        lapic.write(lapic.reg_timer_divide, lapic.timer_divide_1);
-        lapic.write(lapic.reg_lvt_timer,
-                    lapic.timer_periodic | (INT_IRQ + IRQ_TIMER));
         lapic.write(lapic.reg_timer_initial_count, 1000000000 / rate);
     } else {
         lapic.write(lapic.reg_timer_initial_count, 0);
@@ -548,7 +545,6 @@ elf_symtabref symtab = {
 
 __no_asan
 bool lookup_symbol(uintptr_t addr, const char** name, uintptr_t* start) {
-    static_assert(SYMTAB_ADDR / 0x200000  == 8);
     if (!kernel_pagetable[2].entry[SYMTAB_ADDR / 0x200000]) {
         kernel_pagetable[2].entry[SYMTAB_ADDR / 0x200000] =
             SYMTAB_ADDR | PTE_P | PTE_W | PTE_PS;
@@ -765,9 +761,11 @@ int check_keyboard() {
         // restore initial value of data segment for reboot support
         stash_kernel_data(true);
         extern uint8_t _data_start, _edata, _kernel_end;
-        uint8_t* data_stash = (uint8_t*) SYMTAB_ADDR - (&_edata - &_data_start);
-        memcpy(&_data_start, data_stash, &_edata - &_data_start);
-        memset(&_edata, 0, &_kernel_end - &_edata);
+        uintptr_t data_size = (uintptr_t) &_edata - (uintptr_t) &_data_start;
+        uintptr_t zero_size = (uintptr_t) &_kernel_end - (uintptr_t) &_edata;
+        uint8_t* data_stash = (uint8_t*) (SYMTAB_ADDR - data_size);
+        memcpy(&_data_start, data_stash, data_size);
+        memset(&_edata, 0, zero_size);
         // restart kernel
         asm volatile("movl $0x2BADB002, %%eax; jmp kernel_entry"
                      : : "b" (multiboot_info) : "memory");
@@ -990,8 +988,8 @@ void __cxa_atexit(...) {
 static void stash_kernel_data(bool reboot) {
     // stash initial value of data segment for soft-reboot support
     extern uint8_t _data_start, _edata, _kernel_end;
-    size_t data_size = &_edata - &_data_start;
-    uint8_t* data_stash = (uint8_t*) SYMTAB_ADDR - data_size;
+    uintptr_t data_size = (uintptr_t) &_edata - (uintptr_t) &_data_start;
+    uint8_t* data_stash = (uint8_t*) (SYMTAB_ADDR - data_size);
     if (reboot) {
         memcpy(&_data_start, data_stash, data_size);
         memset(&_edata, 0, &_kernel_end - &_edata);

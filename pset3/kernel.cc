@@ -201,6 +201,7 @@ void process_setup(pid_t pid, const char* program_name) {
 void exception(regstate* regs) {
     // Copy the saved registers into the `current` process descriptor.
     current->regs = *regs;
+    regs = &current->regs;
 
     // It can be useful to log events using `log_printf`.
     // Events logged this way are stored in the host's `log.txt` file.
@@ -274,6 +275,7 @@ int syscall_page_alloc(uintptr_t addr);
 uintptr_t syscall(regstate* regs) {
     // Copy the saved registers into the `current` process descriptor.
     current->regs = *regs;
+    regs = &current->regs;
 
     // It can be useful to log events using `log_printf`.
     // Events logged this way are stored in the host's `log.txt` file.
