@@ -47,4 +47,4 @@ check-%:
 .PRECIOUS: %.o
 .PHONY: all tests stdio slow \
 	clean clean-main distclean check check-% prepare-check
-export STRACE
+export STRACE NOSTDIO TRIALS MAXTIME
