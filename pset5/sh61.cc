@@ -60,7 +60,7 @@ pid_t command::make_child(pid_t pgid) {
     // Your code here!
 
     fprintf(stderr, "command::make_child not done yet\n");
-    return pid;
+    return this->pid;
 }
 
 
