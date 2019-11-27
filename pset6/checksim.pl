@@ -251,9 +251,8 @@ for (my $y = 0; $y < 8; ++$y) {
     print OUT "\n";
 }
 if ($nrounds < 5) {
-    print OUT "  ${Red}ERROR:${Redctx} too few boards printed${Off}\n";
-}
-if ($counts[1] + 2 * $counts[2] >= $nrounds * 2) {
+    print OUT "${Red}ERROR:${Redctx} too few boards printed${Off} (", $counts[1], " unique ball positions)\n";
+} elsif ($counts[1] + 2 * $counts[2] >= $nrounds * 2) {
     print OUT "${Green}PASS${Off} (", $counts[1], " unique ball positions)\n";
 } else {
     print OUT "${Red}ERROR:${Redctx} too few unique ball positions${Off}\n";

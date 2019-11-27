@@ -2,8 +2,8 @@
 ISCLANG := $(shell if $(CC) --version | grep -e 'LLVM\|clang' >/dev/null; then echo 1; fi)
 ISLINUX := $(if $(wildcard /usr/include/linux/*.h),1,)
 
-CFLAGS := -std=gnu11 -W -Wall -Wshadow -g $(DEFS) $(CFLAGS)
-CXXFLAGS := -std=gnu++1z -W -Wall -Wshadow -g $(DEFS) $(CXXFLAGS)
+CFLAGS := -std=gnu11 -pthread -W -Wall -Wshadow -g $(DEFS) $(CFLAGS)
+CXXFLAGS := -std=gnu++1z -pthread -W -Wall -Wshadow -g $(DEFS) $(CXXFLAGS)
 O ?= -O3
 ifeq ($(filter 0 1 2 3 s,$(O)$(NOOVERRIDEO)),$(strip $(O)))
 override O := -O$(O)
