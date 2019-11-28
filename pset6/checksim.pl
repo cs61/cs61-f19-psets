@@ -22,9 +22,6 @@ my($run61_pid);
 
 
 my($ntest) = 0;
-
-my($sh) = "./sh61";
--d "out" || mkdir("out") || die "Cannot create 'out' directory\n";
 my($ntestfailed) = 0;
 
 # check for a ton of existing simpong61 processes
@@ -182,18 +179,6 @@ sub run_sh61 ($;%) {
     return $answer;
 }
 
-sub kill_sleeps () {
-    open(PS, "ps T |");
-    while (defined($_ = <PS>)) {
-        $_ =~ s/^\s+//;
-        my(@x) = split(/\s+/, $_);
-        if (@x && $x[0] =~ /\A\d+\z/ && $x[4] eq "sleep") {
-            kill($SIGINT, $x[0]);
-        }
-    }
-    close(PS);
-}
-
 sub disallowed_signal ($) {
     my($s) = @_;
     my(@sigs) = split(" ", $Config{sig_name});
@@ -208,8 +193,10 @@ sub disallowed_signal ($) {
 
 open(OUT, ">&STDOUT");
 
-$ENV{"TSAN_OPTIONS"} = "report_bugs=0";
-print OUT "${Cyan}Deadlock check (should see many ball positions)...${Off}\n";
+print OUT "${Cyan}Building without sanitizers...${Off}\n";
+system("make", "SAN=0", "simpong61");
+
+print OUT "\n${Cyan}Deadlock check (should see many ball positions)...${Off}\n";
 my($info) = run_sh61("./simpong61 -d0.01 -w13 -h8 -b6 -s4 -p0.05", "stdin" => "/dev/null", "stdout" => "pipe", "time_limit" => 0.6, "size_limit" => 10000);
 if (!exists($info->{"killed"}) || $info->{"killed"} !~ /^timeout/) {
     print OUT "${Red}FAILURE${Redctx} (expected timeout, got ",
@@ -265,8 +252,10 @@ if ($nrounds < 5) {
     print OUT "${Off}\n";
 }
 
+print OUT "\n${Cyan}Building with sanitizers...${Off}\n";
+system("make SAN=1 simpong61 >/dev/null");
 $ENV{"TSAN_OPTIONS"} = "color=always";
-print OUT "\n${Cyan}Sanitizer check (should see no sanitizer messages)...${Off}\n";
+print OUT "${Cyan}Sanitizer check (should see no sanitizer messages)...${Off}\n";
 $info = run_sh61("./simpong61", "stdin" => "/dev/null", "stdout" => "pipe", "time_limit" => 3, "size_limit" => 10000);
 if (!exists($info->{"killed"}) || $info->{"killed"} !~ /^timeout/) {
     print OUT "${Red}FAILURE${Redctx} (expected timeout, got ",

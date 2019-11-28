@@ -17,8 +17,7 @@ simpong61: simpong61.o helpers.o
 pong61: pong61.o helpers.o
 	$(call run,$(CXX) $(CXXFLAGS) $(O) -o $@ $^ $(LDFLAGS) $(LIBS),LINK $@)
 
-check: simpong61 always
-	@if test "$(SAN)" != 1; then (echo; echo '** WARNING: Please run `make SAN=1 check` instead.'; echo) 1>&2; fi
+check: always
 	perl checksim.pl
 
 clean: clean-main
